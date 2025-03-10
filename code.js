@@ -1,48 +1,40 @@
-'use strict';
-
-const port = 3000;
-const express = require('express');
-const app = express();
-const bodyParser = require('body-parser');
-const urlencoded = bodyParser.urlencoded;
-const staticServer = express.static;
-const session = require('express-session')
-
-app.use(urlencoded({ extended: true }));
-app.use('/', staticServer('./static/'));
-app.use(session({secret: 'secret'}));
-
-
-const users = {
-    'user1': 'password1',
-    'user2': 'password2'
+var mysql = require('db-mysql');
+var http = require('http');
+var out;
+var valTom;
+var req = http.request(options, function(res)
+{
+	res.on('data', function(chunk)
+	{
+		valTom = chunk;
+	}
+	);
 }
-
-const data = {
-    'user1': 'This is the data for user1',
-    'user2': 'This is the data for user2',
+);
+new mysql.Database(
+{
+	hostname: 'localhost',
+	user: 'user',
+	password: 'password',
+	database: 'test'
 }
-
-app.post('/session', function(req, res) {
-    const username = req.body.username;
-    const password = req.body.password;
-
-    if (users[username] === password) {
-        req.session.loggedIn = true;
-        res.writeHead(302, {
-            'Location': `data?username=${username}`
-        });
-        res.end();
-    } else {
-        res.status(401).end('wrong username or password');
-    }
-});
-
-app.get('/data', function(req, res) {
-    if (!req.session || !req.session.loggedIn) {
-        res.status(403).end('not logged in');
-    } else {
-        const username = req.query.username;
-        res.end(data[username]);
-    }
-});
+).connect(function(error)
+{
+	var the_Query =
+	"INSERT INTO Customers (CustomerName, ContactName) VALUES ('Tom'," +
+	valTom + ")";
+	this.query(the_Query).execute(function(error, result)
+	{
+		if (error)
+		{
+			console.log("Error: " + error);
+		}
+		else
+		{
+			console.log('GENERATED id: ' + result.id);
+		}
+	}
+	);
+	out = resIn;
+}
+);
