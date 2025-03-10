@@ -1,29 +1,48 @@
-function validateInput(input) {
+'use strict';
 
-  const sanitizedInput = input.replace(/</g, ‘&lt;’).replace(/>/g, ‘&gt;’);
+const port = 3000;
+const express = require('express');
+const app = express();
+const bodyParser = require('body-parser');
+const urlencoded = bodyParser.urlencoded;
+const staticServer = express.static;
+const session = require('express-session')
 
-  if (sanitizedInput === ”) {
+app.use(urlencoded({ extended: true }));
+app.use('/', staticServer('./static/'));
+app.use(session({secret: 'secret'}));
 
-throw new Error(‘Input cannot be empty’);
 
-  }
-
-  return sanitizedInput;
-
+const users = {
+    'user1': 'password1',
+    'user2': 'password2'
 }
 
-if (req.headers.referer !== ‘https://www.example.com’) {
-
-  res.status(403).send(‘Forbidden’);
-
-
-
+const data = {
+    'user1': 'This is the data for user1',
+    'user2': 'This is the data for user2',
 }
 
-const bcrypt = require(‘bcrypt’);
+app.post('/session', function(req, res) {
+    const username = req.body.username;
+    const password = req.body.password;
 
-const saltRounds = 10;
+    if (users[username] === password) {
+        req.session.loggedIn = true;
+        res.writeHead(302, {
+            'Location': `data?username=${username}`
+        });
+        res.end();
+    } else {
+        res.status(401).end('wrong username or password');
+    }
+});
 
-bcrypt.hash(myPlaintextPassword, saltRounds, function(err, hash) {
-
+app.get('/data', function(req, res) {
+    if (!req.session || !req.session.loggedIn) {
+        res.status(403).end('not logged in');
+    } else {
+        const username = req.query.username;
+        res.end(data[username]);
+    }
 });
